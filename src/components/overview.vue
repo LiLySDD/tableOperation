@@ -85,7 +85,7 @@
             </el-dialog>
         </div>
         <div>
-            <el-form :model="checkForm" status-icon :rules="rules" ref="checkForm" class="demo-ruleForm">
+            <el-form :model="checkForm[indexForm]" status-icon ref="checkForm[indexForm]" class="demo-checkForm">
             <el-table
                     border
                     stripe
@@ -97,7 +97,7 @@
                         label="工号"
                 >
                     <template scope="scope">
-                        <el-input size="mini" style="height: 100%" v-show="scope.row.id===''" v-model="checkForm.id" :disabled="true"></el-input>
+                        <el-input size="mini" style="height: 100%" v-show="scope.row.id===''" v-model="checkForm[scope.$index].id" :disabled="true"></el-input>
                         <span v-show="scope.row.id!==''">{{ scope.row.id }}</span>
                     </template>
                 </el-table-column>
@@ -106,8 +106,12 @@
                         label="姓名"
                 >
                     <template scope="scope">
-                            <el-form-item prop="name">
-                                <el-input size="mini" style="height: 100%" v-show="scope.row.name===''" v-model="checkForm.name"></el-input>
+                            <el-form-item prop="name" :rules="[{
+                            validator(rule,value,callback){
+                            if(checkForm[scope.$index].name){callback();}
+                            else{callback(message='请输入姓名');}},trigger: 'change'}
+                            ]">
+                                <el-input size="mini" style="height: 100%" v-show="scope.row.name===''" v-model="checkForm[scope.$index].name"></el-input>
                                 <span v-show="scope.row.name!==''">{{ scope.row.name }}</span>
                             </el-form-item>
                     </template>
@@ -118,7 +122,7 @@
                 >
                     <template scope="scope">
                             <el-form-item prop="gender">
-                                <el-radio-group v-show="scope.row.gender===''" v-model="checkForm.gender">
+                                <el-radio-group v-show="scope.row.gender===''" v-model="checkForm[scope.$index].gender">
                                     <el-radio label="男"></el-radio>
                                     <el-radio label="女"></el-radio>
                                 </el-radio-group>
@@ -131,9 +135,13 @@
                         label="开始日期"
                 >
                     <template scope="scope">
-                            <el-form-item prop="date[0]"  :rules="rules1">
+                            <el-form-item prop="date[0]"  :rules="[{
+                            validator(rule,value,callback){
+                            if(checkForm[scope.$index].date[0]){callback();}
+                            else{callback(message='请输入开始日期');}},trigger: 'change'}
+                            ]">
                                 <el-date-picker
-                                        v-model="checkForm.date[0]"
+                                        v-model="checkForm[scope.$index].date[0]"
                                         v-show="scope.row.date1===''"
                                         style="height: 100%"
                                         size="mini"
@@ -150,10 +158,13 @@
                         label="结束日期"
                 >
                     <template scope="scope">
-                            <el-form-item prop="date[1]" :rules="[
-                            { required: true, message: '请输入结束日期',trigger: 'blur'}]">
+                            <el-form-item prop="date[1]" :rules="[{
+                            validator(rule,value,callback){
+                            if(checkForm[scope.$index].date[1]){callback();}
+                            else{callback(message='请输入结束日期');}
+                            },trigger: 'change'}]">
                                 <el-date-picker
-                                        v-model="checkForm.date[1]"
+                                        v-model="checkForm[scope.$index].date[1]"
                                         v-show="scope.row.date2===''"
                                         style="height: 100%"
                                         size="mini"
@@ -171,7 +182,7 @@
                 >
                     <template scope="scope">
                             <el-form-item prop="region">
-                                <el-select v-show="scope.row.region===''" v-model="checkForm.region" placeholder="请选择城市">
+                                <el-select v-show="scope.row.region===''" v-model="checkForm[scope.$index].region" placeholder="请选择城市">
                                     <el-option label="上海" value="上海"></el-option>
                                     <el-option label="北京" value="北京"></el-option>
                                     <el-option label="大连" value="大连"></el-option>
@@ -185,8 +196,12 @@
                         label="身份证号"
                 >
                     <template scope="scope">
-                            <el-form-item prop="identifier">
-                                <el-input size="mini" style="height: 100%" v-show="scope.row.identifier===''" v-model="checkForm.identifier"></el-input>
+                            <el-form-item prop="identifier" :rules="[{
+                            validator(rule,value,callback){
+                            if(checkForm[scope.$index].identifier){callback();}
+                            else{callback(message='请输入身份证号');}},trigger: 'change'}
+                            ]">
+                                <el-input size="mini" style="height: 100%" v-show="scope.row.identifier===''" v-model="checkForm[scope.$index].identifier"></el-input>
                                 <span v-show="scope.row.identifier!==''">{{ scope.row.identifier }}</span>
                             </el-form-item>
                     </template>
@@ -208,7 +223,7 @@
                             </el-button>
                         </div>
                         <div v-else>
-                            <el-button type="success" icon="el-icon-success" @click="changeForm('checkForm')" size="mini" plain></el-button>
+                            <el-button type="success" icon="el-icon-success" @click="changeForm('checkForm[indexForm]')" size="mini" plain></el-button>
                             <el-button type="danger" icon="el-icon-error" @click="abolishChange(scope.$index, scope.row)" size="mini" plain></el-button>
                         </div>
                     </template>
@@ -267,29 +282,9 @@ export default {
         msg: String
     },
     data(){
-        let dateTime = (rule, value, callback) => {
-            if (!value) {
-                return callback(new Error('日期不能为空'));
-            }
-            setTimeout(() => {
-                if (!value) {
-                    return callback(new Error('日期不能为空'));
-                } else {
-                    callback();
-                }
-            }, 1000);
-        };
         return {
             form: {
                 id: '',
-                name: '',
-                gender: '',
-                identifier: '',
-                date: [],
-                region: ''
-            },
-            checkForm: {
-                id: 2,
                 name: '',
                 gender: '',
                 identifier: '',
@@ -312,11 +307,6 @@ export default {
                 date: [],
                 region: ''
             },
-            rules1:{
-                date:[
-                    { validator: dateTime,trigger: 'change'}
-                ]
-            },
             rules: {
                 id: [
                     { required: true, message: '请输入工号', trigger: 'blur' },
@@ -331,7 +321,7 @@ export default {
                     { required: true, message: '请输入身份证号', trigger: 'change' },
                 ],
                 region: [
-                    { required: true, message: '请选择城市', trigger: 'blur' }
+                    { required: true, message: '请选择城市', trigger: 'change' }
                 ],
                 date: [
                     { required: true, message: '请选择日期', trigger: 'blur' }
@@ -339,7 +329,7 @@ export default {
             },
             dialogFormVisible:false,
             dialogFormVisibleTwo:false,
-            indexForm:null,
+            indexForm:1,
             tableData:[
                 {
                     id: '1',
@@ -360,7 +350,24 @@ export default {
                     region: '大连'
                 }
             ],
-            domains:[]
+            checkForm:[
+                {
+                    id: '1',
+                    name: 'sdd',
+                    gender: '男',
+                    identifier: 'xxxxxxxxxxxxx',
+                    date: ['2000-01-01','2000-01-02'],
+                    region: '大连'
+                },
+                {
+                    id: '1',
+                    name: 'sdd',
+                    gender: '男',
+                    identifier: 'xxxxxxxxxxxxx',
+                    date: ['2000-01-01','2000-01-02'],
+                    region: '大连'
+                }
+            ]
         }
     },
     methods: {
@@ -368,7 +375,6 @@ export default {
         submitForm(formName) {
             this.$refs[formName].validate((valid) => {
                 if (valid) {
-                    // alert('submit!');
                     this.tableData.push({
                         id:this.form.id,
                         name:this.form.name,
@@ -378,30 +384,33 @@ export default {
                         region:this.form.region,
                         identifier:this.form.identifier
                     });
+                    this.checkForm.push({
+                        id:this.form.id,
+                        name:this.form.name,
+                        date:this.form.date,
+                        gender:this.form.gender,
+                        region:this.form.region,
+                        identifier:this.form.identifier
+                    });
                     this.$refs[formName].resetFields();
                     this.dialogFormVisible = false;
                 } else {
-                    // console.log('error submit!!');
                     return false;
                 }
             });
-            console.log('domains',this.domains);
         },
         //修改里的完成
         changeForm(formName){
             this.$refs[formName].validate((valid) => {
                 if (valid) {
-                    console.log('valid',valid)
-                    console.log("checkForm",this.checkForm)
-                    this.tableData[this.indexForm].id=this.checkForm.id;
-                    this.tableData[this.indexForm].name=this.checkForm.name;
-                    this.tableData[this.indexForm].date1=this.checkForm.date[0];
-                    this.tableData[this.indexForm].date2=this.checkForm.date[1];
-                    this.tableData[this.indexForm].gender=this.checkForm.gender;
-                    this.tableData[this.indexForm].region=this.checkForm.region;
-                    this.tableData[this.indexForm].identifier=this.checkForm.identifier;
+                    this.tableData[this.indexForm].id=this.checkForm[this.indexForm].id;
+                    this.tableData[this.indexForm].name=this.checkForm[this.indexForm].name;
+                    this.tableData[this.indexForm].date1=this.checkForm[this.indexForm].date[0];
+                    this.tableData[this.indexForm].date2=this.checkForm[this.indexForm].date[1];
+                    this.tableData[this.indexForm].gender=this.checkForm[this.indexForm].gender;
+                    this.tableData[this.indexForm].region=this.checkForm[this.indexForm].region;
+                    this.tableData[this.indexForm].identifier=this.checkForm[this.indexForm].identifier;
                     this.dialogFormVisibleTwo = false;
-            console.log("tableData",this.tableData[this.indexForm])
                 } else {
                     return false;
                 }
@@ -427,9 +436,6 @@ export default {
         },
         //显示修改前信息
         handleEdit(index, rows) {
-            this.domains=this.tableData;
-            console.log('domains',this.domains);
-            console.log(index,rows)
             this.indexForm=index;
             // this.dialogFormVisibleTwo = true;
             this.checkLineForm.id=rows.id;
@@ -439,14 +445,6 @@ export default {
             this.checkLineForm.gender=rows.gender;
             this.checkLineForm.region=rows.region;
             this.checkLineForm.identifier=rows.identifier;
-            console.log('checkForm',this.checkForm);
-            this.checkForm.id=rows.id;
-            this.checkForm.name=rows.name;
-            this.checkForm.date[0]=rows.date1;
-            this.checkForm.date[1]=rows.date2;
-            this.checkForm.gender=rows.gender;
-            this.checkForm.region=rows.region;
-            this.checkForm.identifier=rows.identifier;
             rows.id='';
             rows.name='';
             rows.date1='';
@@ -457,9 +455,6 @@ export default {
         },
         //行内修改取消
         abolishChange(index, rows) {
-            console.log(index,rows)
-            this.indexForm=index;
-            console.log('checkForm',this.checkForm);
             rows.id=this.checkLineForm.id;
             rows.name=this.checkLineForm.name;
             rows.date1=this.checkLineForm.date[0];
@@ -467,6 +462,13 @@ export default {
             rows.gender=this.checkLineForm.gender;
             rows.region=this.checkLineForm.region;
             rows.identifier=this.checkLineForm.identifier;
+            this.checkForm[index].id=this.checkLineForm.id;
+            this.checkForm[index].name=this.checkLineForm.name;
+            this.checkForm[index].date[0]=this.checkLineForm.date[0];
+            this.checkForm[index].date[1]=this.checkLineForm.date[1];
+            this.checkForm[index].gender=this.checkLineForm.gender;
+            this.checkForm[index].region=this.checkLineForm.region;
+            this.checkForm[index].identifier=this.checkLineForm.identifier;
         }
     }
 }
